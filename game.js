@@ -1,56 +1,22 @@
-// 3D Shooter Game - Complete Implementation with Sound & Enhanced Graphics
+// 3D Shooter Game - Fixed & Working Version
+
+// Check if THREE is loaded
+if (typeof THREE === 'undefined') {
+    console.error('Three.js not loaded!');
+}
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0e27);
-scene.fog = new THREE.Fog(0x0a0e27, 400, 600);
+scene.background = new THREE.Color(0x000000);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 5, 0);
+camera.position.set(0, 15, 0);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowShadowMap;
-document.getElementById('gameContainer').appendChild(renderer.domElement);
-
-// Sound Manager
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const soundEnabled = true;
-
-function playSound(frequency, duration, type = 'sine') {
-    if (!soundEnabled) return;
-    const now = audioContext.currentTime;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    
-    osc.frequency.value = frequency;
-    osc.type = type;
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
-    
-    osc.start(now);
-    osc.stop(now + duration);
-}
-
-function shootSound() {
-    playSound(200, 0.1, 'square');
-}
-
-function hitSound() {
-    playSound(400, 0.15, 'sine');
-}
-
-function levelUpSound() {
-    playSound(800, 0.3, 'triangle');
-    playSound(600, 0.3, 'triangle');
-}
-
-function damageSound() {
-    playSound(150, 0.2, 'square');
+const container = document.getElementById('gameContainer');
+if (container) {
+    container.appendChild(renderer.domElement);
 }
 
 // Game State
@@ -66,40 +32,25 @@ const gameState = {
     waveSpawned: false
 };
 
-// Lighting - Enhanced
-const ambientLight = new THREE.AmbientLight(0x7700ff, 0.5);
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0x00ffff, 0.6);
-directionalLight.position.set(80, 80, 80);
-directionalLight.shadow.mapSize.width = 2048;
-directionalLight.shadow.mapSize.height = 2048;
-directionalLight.shadow.camera.left = -150;
-directionalLight.shadow.camera.right = 150;
-directionalLight.shadow.camera.top = 150;
-directionalLight.shadow.camera.bottom = -150;
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(50, 50, 50);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// Add neon point lights
-const neonLight1 = new THREE.PointLight(0xff00ff, 1.5, 200);
-neonLight1.position.set(100, 50, 100);
-scene.add(neonLight1);
-
-const neonLight2 = new THREE.PointLight(0x00ffff, 1.5, 200);
-neonLight2.position.set(-100, 50, -100);
-scene.add(neonLight2);
-
 // Ground
 const groundGeometry = new THREE.PlaneGeometry(300, 300);
-const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x1a1a3e });
+const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x1a1a2e });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// Enhanced Grid helper
-const gridHelper = new THREE.GridHelper(300, 60, 0xff00ff, 0x0033ff);
+// Grid
+const gridHelper = new THREE.GridHelper(300, 60, 0x444444, 0x222222);
 gridHelper.position.y = 0.01;
 scene.add(gridHelper);
 
@@ -107,7 +58,6 @@ scene.add(gridHelper);
 const player = {
     position: new THREE.Vector3(0, 2, 0),
     velocity: new THREE.Vector3(0, 0, 0),
-    direction: new THREE.Vector3(0, 0, -1),
     speed: 0.35,
     jumpPower: 0.8,
     isJumping: false,
@@ -116,31 +66,16 @@ const player = {
     shootCooldown: 0
 };
 
-// Player model (enhanced capsule with glow)
-const playerGeometry = new THREE.CapsuleGeometry(0.5, 2, 4, 8);
-const playerMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0x00ff00,
-    emissive: 0x00aa00,
-    shininess: 100
-});
+// Player model - simple box
+const playerGeometry = new THREE.BoxGeometry(1, 2, 1);
+const playerMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
 const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 playerMesh.castShadow = true;
 playerMesh.receiveShadow = true;
 scene.add(playerMesh);
 
-// Player glow
-const playerGlowGeometry = new THREE.CapsuleGeometry(0.6, 2.2, 4, 8);
-const playerGlowMaterial = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    transparent: true,
-    opacity: 0.2
-});
-const playerGlow = new THREE.Mesh(playerGlowGeometry, playerGlowMaterial);
-playerMesh.add(playerGlow);
-
-// Input handling
+// Input
 const keys = {};
-const mouse = { x: 0, y: 0, clicked: false };
 
 window.addEventListener('keydown', (e) => {
     keys[e.key.toLowerCase()] = true;
@@ -151,11 +86,11 @@ window.addEventListener('keyup', (e) => {
 });
 
 window.addEventListener('mousemove', (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = -(e.clientY / window.innerHeight) * 2 + 1;
     
-    player.rotation.y -= mouse.x * 0.005;
-    player.rotation.x -= mouse.y * 0.005;
+    player.rotation.y -= x * 0.001;
+    player.rotation.x -= y * 0.001;
     
     player.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotation.x));
 });
@@ -173,69 +108,52 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Shooting
+// Shoot
 function shoot() {
-    shootSound();
-    const bulletGeometry = new THREE.SphereGeometry(0.15, 8, 8);
-    const bulletMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0x00ff00,
-        emissive: 0x00ff00
-    });
+    const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
     
     const direction = new THREE.Vector3(0, 0, -1);
     direction.applyAxisAngle(new THREE.Vector3(1, 0, 0), player.rotation.x);
     direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
     
-    bullet.position.copy(player.position).add(direction.clone().multiplyScalar(2));
-    bullet.velocity = direction.multiplyScalar(1.2);
+    bullet.position.copy(player.position);
+    bullet.position.add(direction.clone().multiplyScalar(2));
+    bullet.velocity = direction.multiplyScalar(1.5);
     bullet.life = 500;
     
     scene.add(bullet);
     gameState.bullets.push(bullet);
 }
 
-// Create Enemy with enhanced visuals
+// Create Enemy
 function createEnemy() {
     const angle = Math.random() * Math.PI * 2;
     const distance = 40 + Math.random() * 30;
     const x = Math.cos(angle) * distance;
     const z = Math.sin(angle) * distance;
     
-    const enemyGeometry = new THREE.OctahedronGeometry(0.8);
-    const enemyMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xff0080,
-        emissive: 0xff0040,
-        shininess: 100
-    });
+    const enemyGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const enemyMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
     const enemyMesh = new THREE.Mesh(enemyGeometry, enemyMaterial);
-    enemyMesh.position.set(x, 2, z);
+    enemyMesh.position.set(x, 1, z);
     enemyMesh.castShadow = true;
     enemyMesh.receiveShadow = true;
     scene.add(enemyMesh);
     
-    // Enemy glow
-    const enemyGlowGeometry = new THREE.OctahedronGeometry(1);
-    const enemyGlowMaterial = new THREE.MeshBasicMaterial({
-        color: 0xff0080,
-        transparent: true,
-        opacity: 0.15
-    });
-    const enemyGlow = new THREE.Mesh(enemyGlowGeometry, enemyGlowMaterial);
-    enemyMesh.add(enemyGlow);
-    
     const enemy = {
         mesh: enemyMesh,
-        position: new THREE.Vector3(x, 2, z),
+        position: new THREE.Vector3(x, 1, z),
         health: 20,
         shootTimer: 0,
-        speed: 0.12
+        speed: 0.15
     };
     
     gameState.enemies.push(enemy);
 }
 
-// Spawn wave of enemies
+// Spawn wave
 function spawnWave() {
     if (gameState.waveSpawned) return;
     gameState.waveSpawned = true;
@@ -246,22 +164,18 @@ function spawnWave() {
     }
 }
 
-// Enhanced Particle effect
+// Explosion
 function createExplosion(position) {
-    for (let i = 0; i < 30; i++) {
-        const particleGeometry = new THREE.SphereGeometry(0.15, 4, 4);
-        const hue = Math.random() * 0.15 + 0.8; // Orange to yellow
-        const particleMaterial = new THREE.MeshBasicMaterial({ 
-            color: new THREE.Color().setHSL(hue, 1, 0.6),
-            emissive: new THREE.Color().setHSL(hue, 1, 0.5)
-        });
+    for (let i = 0; i < 20; i++) {
+        const particleGeometry = new THREE.SphereGeometry(0.1, 4, 4);
+        const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
         const particle = new THREE.Mesh(particleGeometry, particleMaterial);
         particle.position.copy(position);
         
         const velocity = new THREE.Vector3(
-            (Math.random() - 0.5) * 2.5,
+            (Math.random() - 0.5) * 2,
             Math.random() * 2,
-            (Math.random() - 0.5) * 2.5
+            (Math.random() - 0.5) * 2
         );
         
         particle.velocity = velocity;
@@ -275,17 +189,22 @@ function createExplosion(position) {
 
 // Update HUD
 function updateHUD() {
-    document.getElementById('health').textContent = Math.max(0, Math.floor(gameState.health));
-    document.getElementById('score').textContent = gameState.score;
-    document.getElementById('level').textContent = gameState.level;
-    document.getElementById('enemies').textContent = gameState.enemies.length;
+    const health = document.getElementById('health');
+    const score = document.getElementById('score');
+    const level = document.getElementById('level');
+    const enemies = document.getElementById('enemies');
+    
+    if (health) health.textContent = Math.max(0, Math.floor(gameState.health));
+    if (score) score.textContent = gameState.score;
+    if (level) level.textContent = gameState.level;
+    if (enemies) enemies.textContent = gameState.enemies.length;
 }
 
-// Update function
+// Update
 function update() {
     player.shootCooldown--;
     
-    // Player movement
+    // Movement
     const moveDirection = new THREE.Vector3();
     if (keys['w']) moveDirection.z -= player.speed;
     if (keys['s']) moveDirection.z += player.speed;
@@ -295,7 +214,7 @@ function update() {
     moveDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
     player.position.add(moveDirection);
     
-    // Keep player in larger bounds
+    // Bounds
     player.position.x = Math.max(-140, Math.min(140, player.position.x));
     player.position.z = Math.max(-140, Math.min(140, player.position.z));
     
@@ -317,10 +236,9 @@ function update() {
         player.canJump = true;
     }
     
-    // Update player mesh
     playerMesh.position.copy(player.position);
     
-    // Update camera
+    // Camera
     camera.position.copy(player.position);
     camera.position.y += 0.5;
     
@@ -329,7 +247,7 @@ function update() {
     forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
     camera.lookAt(camera.position.clone().add(forward));
     
-    // Update bullets
+    // Bullets
     for (let i = gameState.bullets.length - 1; i >= 0; i--) {
         const bullet = gameState.bullets[i];
         bullet.position.add(bullet.velocity);
@@ -348,7 +266,6 @@ function update() {
             
             if (distance < 1.5) {
                 enemy.health -= 25;
-                hitSound();
                 createExplosion(bullet.position);
                 
                 scene.remove(bullet);
@@ -364,7 +281,7 @@ function update() {
         }
     }
     
-    // Update enemies
+    // Enemies
     for (let i = 0; i < gameState.enemies.length; i++) {
         const enemy = gameState.enemies[i];
         
@@ -373,19 +290,16 @@ function update() {
         enemy.position.add(direction.multiplyScalar(enemy.speed));
         enemy.mesh.position.copy(enemy.position);
         
-        // Rotate enemy for visual effect
+        // Rotate
         enemy.mesh.rotation.x += 0.02;
         enemy.mesh.rotation.y += 0.03;
         
-        // Enemy shooting
+        // Shoot
         enemy.shootTimer++;
         if (enemy.shootTimer > 80) {
             const bulletDir = player.position.clone().sub(enemy.position).normalize();
-            const enemyBulletGeometry = new THREE.SphereGeometry(0.12, 8, 8);
-            const enemyBulletMaterial = new THREE.MeshBasicMaterial({ 
-                color: 0xff00ff,
-                emissive: 0xff00ff
-            });
+            const enemyBulletGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+            const enemyBulletMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff });
             const enemyBullet = new THREE.Mesh(enemyBulletGeometry, enemyBulletMaterial);
             
             enemyBullet.position.copy(enemy.position).add(bulletDir.multiplyScalar(1.5));
@@ -398,20 +312,19 @@ function update() {
             enemy.shootTimer = 0;
         }
         
-        // Check collision with player
+        // Collision with player
         const dist = enemy.position.distanceTo(player.position);
         if (dist < 2) {
             gameState.health -= 0.3;
         }
     }
     
-    // Update particles
+    // Particles
     for (let i = gameState.particles.length - 1; i >= 0; i--) {
         const particle = gameState.particles[i];
         particle.position.add(particle.velocity);
         particle.velocity.y -= 0.03;
         particle.life--;
-        particle.material.opacity = particle.life / particle.maxLife;
         
         if (particle.life <= 0) {
             scene.remove(particle);
@@ -419,14 +332,13 @@ function update() {
         }
     }
     
-    // Check collisions with enemy bullets
+    // Enemy bullet collision
     for (let i = gameState.bullets.length - 1; i >= 0; i--) {
         const bullet = gameState.bullets[i];
         if (bullet.isEnemyBullet) {
             const dist = bullet.position.distanceTo(player.position);
             if (dist < 1) {
                 gameState.health -= 8;
-                damageSound();
                 scene.remove(bullet);
                 gameState.bullets.splice(i, 1);
                 createExplosion(bullet.position);
@@ -439,22 +351,26 @@ function update() {
         gameState.level++;
         gameState.health = Math.min(gameState.maxHealth, gameState.health + 20);
         gameState.waveSpawned = false;
-        levelUpSound();
         spawnWave();
     }
     
-    // Game over check
+    // Game over
     if (gameState.health <= 0) {
         gameState.gameOver = true;
-        document.getElementById('gameOver').style.display = 'block';
-        document.getElementById('finalScore').textContent = gameState.score;
-        document.getElementById('levelReached').textContent = gameState.level;
+        const gameOverEl = document.getElementById('gameOver');
+        if (gameOverEl) gameOverEl.style.display = 'block';
+        
+        const finalScore = document.getElementById('finalScore');
+        const levelReached = document.getElementById('levelReached');
+        
+        if (finalScore) finalScore.textContent = gameState.score;
+        if (levelReached) levelReached.textContent = gameState.level;
     }
     
     updateHUD();
 }
 
-// Animation loop
+// Animate
 function animate() {
     requestAnimationFrame(animate);
     
@@ -465,8 +381,11 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Start game
+// Start
+console.log('Game starting...');
 setTimeout(() => {
+    console.log('Spawning wave...');
     spawnWave();
 }, 500);
 animate();
+console.log('Animation loop started!');
