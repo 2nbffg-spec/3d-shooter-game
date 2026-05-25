@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Shooter Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ff00;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+            font-family: 'Courier New', monospace;
+            z-index: 100;
+        }
+        
+        #hudRight {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #00ff00;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+            font-family: 'Courier New', monospace;
+            z-index: 100;
+            text-align: right;
+        }
+        
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99;
+        }
+        
+        #crosshair::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: #00ff00;
+            border-radius: 50%;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border: 3px solid #ff0000;
+            text-align: center;
+            display: none;
+            z-index: 200;
+            border-radius: 10px;
+        }
+        
+        #gameOver h1 {
+            color: #ff0000;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff0000;
+        }
+        
+        #gameOver p {
+            color: #00ff00;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        #gameOver button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        #gameOver button:hover {
+            background: #00cc00;
+            transform: scale(1.1);
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ff00;
+            text-align: center;
+            font-size: 14px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer"></div>
+    
+    <div id="hud">
+        <div>HEALTH: <span id="health">100</span></div>
+        <div>AMMO: <span id="ammo">∞</span></div>
+        <div>LEVEL: <span id="level">1</span></div>
+    </div>
+    
+    <div id="hudRight">
+        <div>SCORE: <span id="score">0</span></div>
+        <div>ENEMIES: <span id="enemies">0</span></div>
+    </div>
+    
+    <div id="crosshair"></div>
+    
+    <div id="gameOver">
+        <h1>GAME OVER</h1>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <p>Level Reached: <span id="levelReached">1</span></p>
+        <button onclick="location.reload()">PLAY AGAIN</button>
+    </div>
+    
+    <div id="controls">
+        <div>WASD - Move | Mouse - Look | Click - Shoot | Space - Jump</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
