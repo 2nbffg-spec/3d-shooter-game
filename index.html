@@ -12,9 +12,9 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', monospace;
             overflow: hidden;
-            background: #000;
+            background: #0a0e27;
         }
         
         #gameContainer {
@@ -29,22 +29,30 @@
             color: #00ff00;
             font-size: 18px;
             font-weight: bold;
-            text-shadow: 0 0 10px #00ff00;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
             font-family: 'Courier New', monospace;
             z-index: 100;
+            background: rgba(0, 20, 0, 0.7);
+            padding: 15px;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
         }
         
         #hudRight {
             position: absolute;
             top: 20px;
             right: 20px;
-            color: #00ff00;
+            color: #00ffff;
             font-size: 18px;
             font-weight: bold;
-            text-shadow: 0 0 10px #00ff00;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
             font-family: 'Courier New', monospace;
             z-index: 100;
             text-align: right;
+            background: rgba(0, 20, 40, 0.7);
+            padding: 15px;
+            border: 2px solid #00ffff;
+            border-radius: 5px;
         }
         
         #crosshair {
@@ -52,12 +60,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 30px;
-            height: 30px;
-            border: 2px solid #00ff00;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ff0080;
             border-radius: 50%;
             pointer-events: none;
             z-index: 99;
+            box-shadow: 0 0 10px #ff0080, inset 0 0 10px #ff0080;
         }
         
         #crosshair::before {
@@ -66,10 +75,11 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 4px;
-            height: 4px;
-            background: #00ff00;
+            width: 6px;
+            height: 6px;
+            background: #ff0080;
             border-radius: 50%;
+            box-shadow: 0 0 10px #ff0080;
         }
         
         #gameOver {
@@ -77,44 +87,47 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 40px;
-            border: 3px solid #ff0000;
+            background: rgba(10, 14, 39, 0.95);
+            padding: 50px;
+            border: 3px solid #ff0080;
             text-align: center;
             display: none;
             z-index: 200;
             border-radius: 10px;
+            box-shadow: 0 0 50px #ff0080;
         }
         
         #gameOver h1 {
-            color: #ff0000;
-            font-size: 48px;
+            color: #ff0080;
+            font-size: 60px;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px #ff0000;
+            text-shadow: 0 0 30px #ff0080, 0 0 60px #ff0080;
         }
         
         #gameOver p {
             color: #00ff00;
-            font-size: 24px;
-            margin-bottom: 10px;
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #00ff00;
         }
         
         #gameOver button {
-            background: #00ff00;
+            background: linear-gradient(135deg, #00ff00, #00ffff);
             color: #000;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px 40px;
+            font-size: 20px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 30px;
             border-radius: 5px;
             font-weight: bold;
             transition: all 0.3s;
+            box-shadow: 0 0 20px #00ff00;
         }
         
         #gameOver button:hover {
-            background: #00cc00;
-            transform: scale(1.1);
+            transform: scale(1.15);
+            box-shadow: 0 0 40px #00ff00, 0 0 20px #00ffff;
         }
         
         #controls {
@@ -122,10 +135,15 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            color: #00ff00;
+            color: #00ffff;
             text-align: center;
             font-size: 14px;
             z-index: 100;
+            background: rgba(0, 20, 40, 0.7);
+            padding: 10px 20px;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            text-shadow: 0 0 5px #00ffff;
         }
     </style>
 </head>
@@ -133,27 +151,27 @@
     <div id="gameContainer"></div>
     
     <div id="hud">
-        <div>HEALTH: <span id="health">100</span></div>
-        <div>AMMO: <span id="ammo">∞</span></div>
-        <div>LEVEL: <span id="level">1</span></div>
+        <div>❤ HEALTH: <span id="health">100</span></div>
+        <div>🔫 AMMO: <span id="ammo">∞</span></div>
+        <div>📍 LEVEL: <span id="level">1</span></div>
     </div>
     
     <div id="hudRight">
-        <div>SCORE: <span id="score">0</span></div>
-        <div>ENEMIES: <span id="enemies">0</span></div>
+        <div>💰 SCORE: <span id="score">0</span></div>
+        <div>👾 ENEMIES: <span id="enemies">0</span></div>
     </div>
     
     <div id="crosshair"></div>
     
     <div id="gameOver">
-        <h1>GAME OVER</h1>
-        <p>Final Score: <span id="finalScore">0</span></p>
-        <p>Level Reached: <span id="levelReached">1</span></p>
-        <button onclick="location.reload()">PLAY AGAIN</button>
+        <h1>⚠ GAME OVER ⚠</h1>
+        <p>💰 Final Score: <span id="finalScore">0</span></p>
+        <p>📊 Level Reached: <span id="levelReached">1</span></p>
+        <button onclick="location.reload()">► PLAY AGAIN ◄</button>
     </div>
     
     <div id="controls">
-        <div>WASD - Move | Mouse - Look | Click - Shoot | Space - Jump</div>
+        <div>⬆⬅⬇➡ WASD - Move | 🖱 Mouse - Look | 🖱 Click - Shoot | SPACE - Jump</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
